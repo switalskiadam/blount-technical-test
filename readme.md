@@ -21,7 +21,7 @@ This dataset represents a fictional company, E-Corp. E-Corp is a electronics com
 1. Perfrom a exploratory data analysis on the existing dataset. Please list your findings along with the code showcasing your results. Please use SQL or a Jupyter (python) notebook. Limit the commentary here to no more than 5 key bullet points. Sub-bullets can be used to help explain or elaborate on the key bullet points if necessary.
 2. Generate and execute the DDL required to create a view that joins all 3 tables together. Please provide the DDL as your solution.
 3. Determine the number 4 ranked products based on total sales by year. Please provide SQL statement that returns your answer.
-    - Based on the answer from number 3, based on the product costs in the table please determine which of the two products is more profitable. Provide an answer using a SQL statement.
+    - Based on the answer from number 3, based on the product costs in the table please determine which of the two products generates the most profit. Provide an answer using a SQL statement.
 
         | Item | Cost |
         | ---- | ---- |
