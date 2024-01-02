@@ -12,7 +12,7 @@
 ![alt text](diagram.png)
 
 ## Uploading your solutions
-When you are done providing solutions, please create a new branch and push to our repo for review. We will review internally before the next scheduled interview.
+When you are ready to provide solutions, please create a new branch and push to our repo for review. We will review internally before the next scheduled interview.
 
 ## Technical test
 ### Background information on the data
