@@ -1,0 +1,85 @@
+/*************************************************************************************************************************************
+	2) Generate and execute the DDL required to create a view that joins all 3 tables together. Please provide the DDL as your solution.
+*************************************************************************************************************************************/
+	create or replace view EXAMPLE_DB.STAGE.VW_SALESDATA(	
+		SALE_ID,
+		PRODUCT_ID,
+		PRODUCT_NAME,
+		CUSTOMER_ID,
+		FIRST_NAME,
+		LAST_NAME,
+		EMAIL,
+		SALE_DATE,
+		QUANTITY,
+		TOTAL_AMOUNT
+	) as
+	select s.SALE_ID, s.PRODUCT_ID, p.PRODUCT_NAME, s.customer_id, c.first_name, c.last_name, c.email, s.sale_date, s.quantity, s.total_amount
+	from SALES_MART.sales s
+	  inner join SALES_MART.customers c on c.customer_id = s.customer_id
+	  inner join SALES_MART.products p on p.product_id = s.product_id;
+
+/*********************************************************************************************************************************
+    3) Determine the number 4 ranked products based on total sales by year. Please provide SQL statement that returns your answer.
+*********************************************************************************************************************************/
+    select *
+    from (
+        select 
+            p.product_name, 
+            year(sale_date) as year_sold, 
+            sum(total_amount) as total_sales,
+            rank() over (partition by year(sale_date) order by sum(total_amount) desc) as ProductRank
+        from SALES_MART.SALES s
+            inner join SALES_MART.PRODUCTS p on p.product_id = s.product_id
+        group by 1, 2
+    ) x 
+    where x.ProductRank = 4
+
+/*********************************************************************************************************************************
+    3b) Based on the answer from number 3, based on the product costs in the table 
+        please determine which of the two products generates the most profit. Provide an answer using a SQL statement.
+*********************************************************************************************************************************/
+    With PRODUCT_COST_CTE (product_year, product_cost) AS
+    (
+        select 2022, 375.00 union
+        select 2023, 450.00
+    )
+    select top 2
+        p.PRODUCT_NAME,
+        sum((s.QUANTITY * p.price)) as total_sales, 
+        sum((s.QUANTITY * cte.product_cost)) as total_cost,
+        sum((s.QUANTITY * p.price)) - sum((s.QUANTITY * cte.product_cost)) as total_profit
+    from sales_mart.sales s
+        inner join sales_mart.products p on s.product_id = p.product_id
+        inner join PRODUCT_COST_CTE cte on cte.product_year = year(s.sale_date)
+    group by p.PRODUCT_NAME
+    order by total_profit desc
+
+/*********************************************************************************************************************************
+    4) The marketing team wants to segment customers based on their total revenue. 
+        How would you identify high-value customers who have generated more revenue than the average customer? 
+        Provide an answer using a SQL statement.
+*********************************************************************************************************************************/
+    select c.customer_id, c.first_name, c.last_name, 
+        sum(s.quantity * p.price) as total_sales, 
+        avg(sum(s.quantity * p.price)) over () as avg_total_sales,
+        case 
+            when sum(s.quantity * p.price) > avg(sum(s.quantity * p.price)) over () then 'High-Value'
+            else 'Low-Value'
+        end as customer_category
+    from SALES_MART.sales s
+        inner join sales_mart.customers c on c.customer_id = s.customer_id
+        inner join sales_mart.products p on p.product_id = s.product_id
+    group by c.customer_id, c.first_name, c.last_name
+    order by c.customer_id
+
+/*********************************************************************************************************************************
+    5) For each product, calculate its percentage contribution to the total revenue. Provide an answer using a SQL statement.
+*********************************************************************************************************************************/
+    select p.product_id, p.product_name, 
+        sum(s.quantity * p.price) as total_revenue_customer, 
+        sum(sum(s.quantity * p.price)) over () as total_revenue,
+        (sum(s.quantity * p.price) / sum(sum(s.quantity * p.price)) over ()) as pct_of_total
+    from sales_mart.sales s
+        inner join sales_mart.products p on s.product_id = p.product_id
+    group by p.product_id, p.product_name
+    order by pct_of_total desc
